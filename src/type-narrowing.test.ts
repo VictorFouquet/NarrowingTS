@@ -1,5 +1,5 @@
 import { test, expect, expectTypeOf } from "vitest";
-import { isCombined, isEntityA, isEntityB, isEntityC, isOperation, isUniq } from "./type-narrowing";
+import { isCombined, isEntityA, isEntityB, isEntityC, isOperation, isUniq, matchEntityB, matchEntityC } from "./type-narrowing";
 
 test("Type guards should prevent invalid nesting of isCombined and isUniq", () => {1
     function testInvalidSemanticNesting(v: any) {
@@ -101,6 +101,88 @@ test("Type guards should prevent invalid nesting of isEntity, isUniq and isCombi
     testInvalidSemanticNesting(v5);
     testInvalidSemanticNesting(v6);
     testInvalidSemanticNesting(v7);
+});
+
+test("Type guards should allow valid matching operations", () => {1
+    function testMatchingNesting(v: any) {
+        if (isCombined(v)) {
+            // Should have exact shape { b?: string, c?:string }
+            expectTypeOf(v.b).toBeNullable();
+            expectTypeOf(v.c).toBeNullable();
+            expectTypeOf(v).not.toHaveProperty("a");
+            
+            if (matchEntityB(v)) {
+                // Should have exact shape { b: string, c?:string }
+                expectTypeOf(v.b).toBeString();
+                expectTypeOf(v.c).toBeNullable();
+                expectTypeOf(v).not.toHaveProperty("a");
+            } else if (matchEntityC(v)) {
+                // Should have exact shape { b: string }
+                expectTypeOf(v.c).toBeString();
+                expectTypeOf(v.b).toBeNullable();
+                expectTypeOf(v).not.toHaveProperty("a");
+            }
+        }
+    }
+
+    let v1: any = { b: "" };
+    let v2: any = { c: "" };
+    let v3: any = { b: "", c: "" };
+
+    testMatchingNesting(v1);
+    testMatchingNesting(v2);
+    testMatchingNesting(v3);
+});
+
+test("Type guards should allow valid matching with entities operations", () => {1
+    function testMatchingNesting(v: any) {            
+        if (matchEntityB(v)) {
+            // Should have exact shape { b: string, c?:string }
+            expectTypeOf(v.b).toBeString();
+            expectTypeOf(v.c).toBeNullable();
+            expectTypeOf(v).not.toHaveProperty("a");
+
+            if (isEntityB(v)) {
+                // Should have exact shape { b: string }
+                expectTypeOf(v.b).toBeString();
+                expectTypeOf(v).not.toHaveProperty("c");
+            } else if (matchEntityC(v)) {
+                // Should have exact shape { b: string, c: string }
+                expectTypeOf(v.b).toBeString();
+                expectTypeOf(v.b).toBeString();
+            } else if (isEntityC(v)) {
+                // Invalid semantically, can't be and match 2 different types at the same time
+                expectTypeOf(v).toMatchTypeOf<never>();
+            }
+
+        } else if (matchEntityC(v)) {
+            // Should have exact shape { b?: string, c: string }
+            expectTypeOf(v.c).toBeString();
+            expectTypeOf(v.b).toBeNullable();
+            expectTypeOf(v).not.toHaveProperty("a");
+
+            if (isEntityC(v)) {
+                // Should have exact shape { c: string }
+                expectTypeOf(v.c).toBeString();
+                expectTypeOf(v).not.toHaveProperty("b");
+            } else if (matchEntityB(v)) {
+                // Should have exact shape { b: string, c: string }
+                expectTypeOf(v.b).toBeString();
+                expectTypeOf(v.b).toBeString();
+            } else if (isEntityB(v)) {
+                // Invalid semantically, can't be and match 2 different types at the same time
+                expectTypeOf(v).toMatchTypeOf<never>();
+            }
+        }
+    }
+
+    let v1: any = { b: "" };
+    let v2: any = { c: "" };
+    let v3: any = { b: "", c: "" };
+
+    testMatchingNesting(v1);
+    testMatchingNesting(v2);
+    testMatchingNesting(v3);
 });
 
 test("Type guards should direct type narrowing from operation to entity leavec", () => {1
