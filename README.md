@@ -6,6 +6,43 @@ The TypeNarrowing *Proof of Concept* provides an example of complex type narrowi
 
 The POC is aimed at enforcing several business rules to strictly constrain the structure and traversal of an object.
 
+An operation can either be an exclusive or a combinable operation, but can never be both at the same time.
+
+**Domain examples**
+
+```
+A *literal query* can be a *strict equal query* or a combination of *match queries*.
+
+It would not make sense semanticaly to allow a query to be at the same time a *strict equality query* AND a combination of *match queries*, regardless of how many *match queries* are combined.
+```
+
+The developers should be allowed to create the following objects, because they semantically make sense :
+
+```typescript
+const eqQuery: Query = {
+    eq: "foo"
+};
+
+const combinedQuery: Query = {
+    startsWith: "foo",
+    endsWith:   "bar"
+};
+```
+
+The developers should be forbiden to create the following objects, because they semantically don't make sense or are redundant :
+
+```typescript
+const eqQuery: Query = {
+    eq: "foo",
+    contains: "foo"
+};
+
+const combinedQuery: Query = {
+    eq: "foo",
+    endsWith: "bar",
+};
+```
+
 All the object allowed keys are defined as typed strings, `A`, `B`, `C` and `D`.
 
 Each of theses keys is used to define a typed object, associating the key to a `string` value :
