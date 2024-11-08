@@ -72,7 +72,7 @@ export function matchKeyC(v: any): v is KeyC & Combinable & Brand<"Combinable" |
 }
 
 export function isExclusive(v: any): v is Exclusive & Brand<"Exclusive" | A | D> {
-  return typeof v === "object"  && containsKeysAllWithTypeString(v, ["a", "d"]);
+  return typeof v === "object"  && containsKeysAllWithTypeString(v, ["a", "d"]) && Object.keys(v).length === 1;
 }
 
 export function isCombinable(v: any): v is Combinable & Brand<"Combinable" | B | C> {
