@@ -1,6 +1,7 @@
 import { test, expect, expectTypeOf } from "vitest";
 import { isCombinable, isKeyA, isKeyB, isKeyC, isSchema, isExclusive, matchKeyB, matchKeyC, isKeyD, Exclusive, Combinable, Schema } from "./type-narrowing";
 
+//------------------------------------------------------------------------- Exclusive type
 
 test("Exclusive should forbid empty object",
     () => expectTypeOf<{}>().not.toMatchTypeOf<Exclusive>()
@@ -20,6 +21,9 @@ test("Exclusive should allow only one key from ExclusiveKey", () => {
         c: ""
     };
 });
+
+
+//------------------------------------------------------------------------- Combinable type
 
 test("Combinable should forbid empty object", () => expectTypeOf<{}>().not.toMatchTypeOf<Combinable>());
 
@@ -43,9 +47,12 @@ test("Combinable should allow any combination of keys from CombinableKey", () =>
     };
 });
 
+
+//------------------------------------------------------------------------- Schema type
+
 test("Schema should forbid empty object", () => expectTypeOf<{}>().not.toMatchTypeOf<Schema>());
 
-test("Schema should forbid mixing Exlusive and Combinable", () => {
+test("Schema should forbid mixing Exclusive and Combinable", () => {
     expectTypeOf<{a: "", b: ""}>().not.toMatchTypeOf<Schema>();
     expectTypeOf<{a: "", c: ""}>().not.toMatchTypeOf<Schema>();
     expectTypeOf<{a: "", b: "", c: ""}>().not.toMatchTypeOf<Schema>();
@@ -68,6 +75,116 @@ test("Schema should allow Combinable", () => {
     expectTypeOf<{b: ""}>().toMatchTypeOf<Schema>();
     expectTypeOf<{c: ""}>().toMatchTypeOf<Schema>();
     expectTypeOf<{b: "", c: ""}>().toMatchTypeOf<Schema>();
+});
+
+//------------------------------------------------------------------------- isKey type guards
+
+test("IsKey typeguards should ensure a Key object contains exactly one valid key", () => {
+    function testIsKey(v: any) {
+        if (isKeyA(v)) {
+            expectTypeOf(v.a).toBeString();
+            expectTypeOf(v).not.toHaveProperty("b");
+            expectTypeOf(v).not.toHaveProperty("c");
+            expectTypeOf(v).not.toHaveProperty("d");
+        } else if (isKeyB(v)) {
+            expectTypeOf(v.b).toBeString();
+            expectTypeOf(v).not.toHaveProperty("a");
+            expectTypeOf(v).not.toHaveProperty("c");
+            expectTypeOf(v).not.toHaveProperty("d");
+        }  else if (isKeyC(v)) {
+            expectTypeOf(v.c).toBeString();
+            expectTypeOf(v).not.toHaveProperty("a");
+            expectTypeOf(v).not.toHaveProperty("b");
+            expectTypeOf(v).not.toHaveProperty("d");
+        } else if (isKeyD(v)) {
+            expectTypeOf(v.d).toBeString();
+            expectTypeOf(v).not.toHaveProperty("a");
+            expectTypeOf(v).not.toHaveProperty("b");
+            expectTypeOf(v).not.toHaveProperty("c");
+        }
+    }
+
+    testIsKey({ a: "" });
+    testIsKey({ b: "" });
+    testIsKey({ c: "" });
+    testIsKey({ d: "" });
+})
+
+test("IsKey typeguards should narrow the object to never in nested IsKey statements", () => {
+    function testIsKey(v: any) {
+        if (isKeyA(v)) {
+            expectTypeOf(v).not.toBeNever();
+            if      (isKeyB(v)) expectTypeOf(v).toBeNever();
+            else if (isKeyC(v)) expectTypeOf(v).toBeNever();
+            else if (isKeyD(v)) expectTypeOf(v).toBeNever();
+        } else if (isKeyB(v)) {
+            expectTypeOf(v).not.toBeNever();
+            if      (isKeyA(v)) expectTypeOf(v).toBeNever();
+            else if (isKeyC(v)) expectTypeOf(v).toBeNever();
+            else if (isKeyD(v)) expectTypeOf(v).toBeNever();
+        }  else if (isKeyC(v)) {
+            expectTypeOf(v).not.toBeNever();
+            if      (isKeyA(v)) expectTypeOf(v).toBeNever();
+            else if (isKeyB(v)) expectTypeOf(v).toBeNever();
+            else if (isKeyD(v)) expectTypeOf(v).toBeNever();
+        } else if (isKeyD(v)) {
+            expectTypeOf(v).not.toBeNever();
+            if      (isKeyA(v)) expectTypeOf(v).toBeNever();
+            else if (isKeyB(v)) expectTypeOf(v).toBeNever();
+            else if (isKeyC(v)) expectTypeOf(v).toBeNever();
+        }
+    }
+
+    testIsKey({ a: "" });
+    testIsKey({ b: "" });
+    testIsKey({ c: "" });
+    testIsKey({ d: "" });
+})
+
+//------------------------------------------------------------------------- isExclusive type guards
+
+test("IsExclusive typeguards should ensure a Exclusive object contains ExclusiveKeys only, all nullable", () => {
+    function testIsKey(v: any) {
+        if (isExclusive(v)) {
+            expectTypeOf(v.a).toBeNullable();
+            expectTypeOf(v.d).toBeNullable();
+            expectTypeOf(v).not.toHaveProperty("b");
+            expectTypeOf(v).not.toHaveProperty("c");
+        }
+    }
+
+    testIsKey({ a: "" });
+    testIsKey({ d: "" });
+})
+
+test("IsExclusive typeguards should narrow object correctly when nesting isKey statement of ExclusivKeys inside isExclusive statement", () => {
+    function testIsKey(v: any) {
+        if (isExclusive(v)) {
+            if (isKeyA(v)) {
+                expectTypeOf(v.a).toBeString();
+                expectTypeOf(v).not.toHaveProperty("d");
+            } else if (isKeyD(v)) {
+                expectTypeOf(v.d).toBeString();
+                expectTypeOf(v).not.toHaveProperty("a");
+            }
+        }
+    }
+
+    testIsKey({ a: "" });
+    testIsKey({ d: "" });
+});
+
+test("IsExclusive typeguards should narrow object to never when nesting isKey statement of CombinableKeys inside isExclusive statement", () => {
+    function testIsKey(v: any) {
+        if (isExclusive(v)) {
+            expectTypeOf(v).not.toBeNever();
+            if      (isKeyB(v)) expectTypeOf(v).toBeNever();
+            else if (isKeyC(v)) expectTypeOf(v).toBeNever();
+        }
+    }
+
+    testIsKey({ a: "" });
+    testIsKey({ d: "" });
 });
 
 test("Type guards should narrow Exclusive to ExclusiveKey", () => {
