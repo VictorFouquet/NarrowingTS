@@ -9,15 +9,15 @@ export type C = "c";
 export type MyKeys = A | B | C;
 
 export type EntityA = {
-    a: string
+    [K in A]: string
 }
 
 export type EntityB = {
-    b: string
+    [K in B]: string
 }
 
 export type EntityC = {
-    c: string
+    [K in C]: string
 }
 
 export type Uniq = {
@@ -33,32 +33,31 @@ export type Operation = (
   { a?: never, b?: string, c: string } |
   { a?: never, b: string, c?: string }
 )
-
-export function isEntityA(v: any): v is EntityA & Brand<"a"> {
+export function isEntityA(v: any): v is EntityA & Brand<A> {
     return typeof v === "object" && Object.keys(v).length === 1 && 'a' in v
 }
 
-export function isEntityB(v: any): v is EntityB & Brand<"b"> {
+export function isEntityB(v: any): v is EntityB & Brand<B> {
     return typeof v === "object" && Object.keys(v).length === 1 && 'b' in v
 }
 
-export function isEntityC(v: any): v is EntityC & Brand<"c"> {
+export function isEntityC(v: any): v is EntityC & Brand<C> {
     return typeof v === "object" && Object.keys(v).length === 1 && 'c' in v
 }
 
-export function matchEntityB(v: any): v is EntityB & Combined & Brand<"combined" | "b"> {
+export function matchEntityB(v: any): v is EntityB & Combined & Brand<"combined" | B> {
     return typeof v === "object" && 'b' in v
 }
 
-export function matchEntityC(v: any): v is EntityC & Combined & Brand<"combined" | "c"> {
+export function matchEntityC(v: any): v is EntityC & Combined & Brand<"combined" | C> {
     return typeof v === "object" && 'c' in v
 }
 
-export function isUniq(v: any): v is Uniq & Brand<"uniq" | "a"> {
+export function isUniq(v: any): v is Uniq & Brand<"uniq" | A> {
   return typeof v === "object" && Object.entries(v).every(([k,v]) => k === 'a' && typeof v === 'string');
 }
 
-export function isCombined(v: any): v is Combined & Brand<"combined" | "b" | "c"> {
+export function isCombined(v: any): v is Combined & Brand<"combined" | B | C> {
   return typeof v === "object" && Object.entries(v).every(([k,v]) => ['b', 'c'].includes(k) && typeof v === 'string');
 }
 
