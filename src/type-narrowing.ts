@@ -28,11 +28,21 @@ export type Combined = AtLeastOne<{
   [K in Exclude<MyKeys, A>]: string
 }>;
 
-export type Operation = (
-  { a: string, b?: never, c?: never } |
-  { a?: never, b?: string, c: string } |
-  { a?: never, b: string, c?: string }
-)
+export type Operation = {
+    [K in MyKeys]: {
+        [U in MyKeys]?: 
+        K extends U ? string :
+        K extends A ? never  :
+        U extends A ? never  :
+        string
+    }
+}[MyKeys];
+// (
+//   { a: string, b?: never, c?: never } |
+//   { a?: never, b?: string, c: string } |
+//   { a?: never, b: string, c?: string }
+// )
+
 export function isEntityA(v: any): v is EntityA & Brand<A> {
     return typeof v === "object" && Object.keys(v).length === 1 && 'a' in v
 }
