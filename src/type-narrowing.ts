@@ -9,75 +9,75 @@ export type B = "b";
 export type C = "c";
 export type D = "d";
 
-export type Exclusive = A | D;
+export type ExclusiveKeys = A | D;
 
-export type MyKeys = A | B | C | D;
+export type Keys = A | B | C | D;
 
-export type EntityA = {
+export type KeyA = {
     [K in A]: string
 }
 
-export type EntityB = {
+export type KeyB = {
     [K in B]: string
 }
 
-export type EntityC = {
+export type KeyC = {
     [K in C]: string
 }
 
-export type EntityD = {
+export type KeyD = {
     [K in D]: string
 }
 
-export type Uniq = {
-  [K in Exclusive]: AtLeastOne<{
-    [U in Exclusive]: K extends U ? string : never
+export type Exclusive = {
+  [K in ExclusiveKeys]: AtLeastOne<{
+    [U in ExclusiveKeys]: K extends U ? string : never
   }>;
-}[Exclusive];
+}[ExclusiveKeys];
 
-export type Combined = AtLeastOne<{
-  [K in Exclude<MyKeys, Exclusive>]: string
+export type Combinable = AtLeastOne<{
+  [K in Exclude<Keys, ExclusiveKeys>]: string
 }>;
 
 export type Operation = {
-    [K in MyKeys]: AtLeastOne<{
-        [U in MyKeys]: 
+    [K in Keys]: AtLeastOne<{
+        [U in Keys]: 
             K extends U ? string :
-            K extends Exclusive ? never  :
-            U extends Exclusive ? never  :
+            K extends ExclusiveKeys ? never  :
+            U extends ExclusiveKeys ? never  :
             string
     }>
-}[MyKeys];
+}[Keys];
 
-export function isEntityA(v: any): v is EntityA & Brand<A> {
+export function isKeyA(v: any): v is KeyA & Brand<A> {
     return typeof v === "object" && Object.keys(v).length === 1 && 'a' in v
 }
 
-export function isEntityB(v: any): v is EntityB & Brand<B> {
+export function isKeyB(v: any): v is KeyB & Brand<B> {
     return typeof v === "object" && Object.keys(v).length === 1 && 'b' in v
 }
 
-export function isEntityC(v: any): v is EntityC & Brand<C> {
+export function isKeyC(v: any): v is KeyC & Brand<C> {
     return typeof v === "object" && Object.keys(v).length === 1 && 'c' in v
 }
 
-export function isEntityD(v: any): v is EntityD & Brand<D> {
+export function isKeyD(v: any): v is KeyD & Brand<D> {
     return typeof v === "object" && Object.keys(v).length === 1 && 'd' in v
 }
 
-export function matchEntityB(v: any): v is EntityB & Combined & Brand<"combined" | B> {
+export function matchKeyB(v: any): v is KeyB & Combinable & Brand<"Combinable" | B> {
     return typeof v === "object" && 'b' in v
 }
 
-export function matchEntityC(v: any): v is EntityC & Combined & Brand<"combined" | C> {
+export function matchKeyC(v: any): v is KeyC & Combinable & Brand<"Combinable" | C> {
     return typeof v === "object" && 'c' in v
 }
 
-export function isUniq(v: any): v is Uniq & Brand<"uniq" | A | D> {
+export function isExclusive(v: any): v is Exclusive & Brand<"Exclusive" | A | D> {
   return typeof v === "object" && Object.entries(v).every(([k,v]) => ['a', 'd'].includes(k) && typeof v === 'string');
 }
 
-export function isCombined(v: any): v is Combined & Brand<"combined" | B | C> {
+export function isCombinable(v: any): v is Combinable & Brand<"Combinable" | B | C> {
   return typeof v === "object" && Object.entries(v).every(([k,v]) => ['b', 'c'].includes(k) && typeof v === 'string');
 }
 

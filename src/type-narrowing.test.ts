@@ -1,24 +1,24 @@
 import { test, expect, expectTypeOf } from "vitest";
-import { isCombined, isEntityA, isEntityB, isEntityC, isOperation, isUniq, matchEntityB, matchEntityC } from "./type-narrowing";
+import { isCombinable, isKeyA, isKeyB, isKeyC, isOperation, isExclusive, matchKeyB, matchKeyC } from "./type-narrowing";
 
-test("Type guards should prevent invalid nesting of isCombined and isUniq", () => {1
+test("Type guards should prevent invalid nesting of isCombinable and isExclusive", () => {1
     function testInvalidSemanticNesting(v: any) {
-        if (isCombined(v)) {
+        if (isCombinable(v)) {
             expectTypeOf(v.b).toBeNullable();
             expectTypeOf(v.c).toBeNullable();
             expectTypeOf(v).not.toHaveProperty("a");
             
-            if (isUniq(v)) {
+            if (isExclusive(v)) {
                 expectTypeOf(v).toMatchTypeOf<never>();
                 expect.unreachable();
             }
             
-        } else if (isUniq(v)) {
+        } else if (isExclusive(v)) {
             expectTypeOf(v.a).toBeNullable();
             expectTypeOf(v).not.toHaveProperty("b");
             expectTypeOf(v).not.toHaveProperty("c");
             
-            if (isCombined(v)) {
+            if (isCombinable(v)) {
                 expectTypeOf(v).toMatchTypeOf<never>();
                 expect.unreachable();
             }
@@ -39,46 +39,46 @@ test("Type guards should prevent invalid nesting of isCombined and isUniq", () =
     testInvalidSemanticNesting(v5);
 });
 
-test("Type guards should prevent invalid nesting of isEntity, isUniq and isCombined", () => {1
+test("Type guards should prevent invalid nesting of isEntity, isExclusive and isCombinable", () => {1
     function testInvalidSemanticNesting(v: any) {
-        if (isCombined(v)) {
+        if (isCombinable(v)) {
             // Should have exact shape { b?: string, c?:string }
             expectTypeOf(v.b).toBeNullable();
             expectTypeOf(v.c).toBeNullable();
             expectTypeOf(v).not.toHaveProperty("a");
             
-            if (isEntityA(v)) { // Invalid statement, can't be combined and entityA -> never
+            if (isKeyA(v)) { // Invalid statement, can't be Combinable and KeyA -> never
                 expectTypeOf(v).toMatchTypeOf<never>();
                 expect.unreachable();
-            } else if (isEntityB(v)) {
+            } else if (isKeyB(v)) {
                 // Should have exact shape { b: string }
                 expectTypeOf(v.b).toBeString();
                 expectTypeOf(v).not.toHaveProperty("a");
                 expectTypeOf(v).not.toHaveProperty("c");
-            } else if (isEntityC(v)) {
+            } else if (isKeyC(v)) {
                 // Should have exact shape { c: string }
                 expectTypeOf(v.c).toBeString();
                 expectTypeOf(v).not.toHaveProperty("a");
                 expectTypeOf(v).not.toHaveProperty("b");
             }
             
-        } else if (isUniq(v)) {
+        } else if (isExclusive(v)) {
             // Should have exact shape { a: string }
             expectTypeOf(v.a).toBeNullable();
             expectTypeOf(v.d).toBeNullable();
             expectTypeOf(v).not.toHaveProperty("b");
             expectTypeOf(v).not.toHaveProperty("c");
             
-            if (isEntityA(v)) {
+            if (isKeyA(v)) {
                 // Should have exact shape { a: string }
                 expectTypeOf(v.a).toBeString();
                 expectTypeOf(v).not.toHaveProperty("b");
                 expectTypeOf(v).not.toHaveProperty("c");
 
-            } else if (isEntityB(v)) { // Invalid statement, can't be uniq and entityB -> never
+            } else if (isKeyB(v)) { // Invalid statement, can't be Exclusive and KeyB -> never
                 expectTypeOf(v).toMatchTypeOf<never>();
                 expect.unreachable();
-            } else if (isEntityC(v)) { // Invalid statement, can't be uniq and entityC -> never
+            } else if (isKeyC(v)) { // Invalid statement, can't be Exclusive and KeyC -> never
                 expectTypeOf(v).toMatchTypeOf<never>();
                 expect.unreachable();
             }
@@ -106,18 +106,18 @@ test("Type guards should prevent invalid nesting of isEntity, isUniq and isCombi
 
 test("Type guards should allow valid matching operations", () => {1
     function testMatchingNesting(v: any) {
-        if (isCombined(v)) {
+        if (isCombinable(v)) {
             // Should have exact shape { b?: string, c?:string }
             expectTypeOf(v.b).toBeNullable();
             expectTypeOf(v.c).toBeNullable();
             expectTypeOf(v).not.toHaveProperty("a");
             
-            if (matchEntityB(v)) {
+            if (matchKeyB(v)) {
                 // Should have exact shape { b: string, c?:string }
                 expectTypeOf(v.b).toBeString();
                 expectTypeOf(v.c).toBeNullable();
                 expectTypeOf(v).not.toHaveProperty("a");
-            } else if (matchEntityC(v)) {
+            } else if (matchKeyC(v)) {
                 // Should have exact shape { b: string }
                 expectTypeOf(v.c).toBeString();
                 expectTypeOf(v.b).toBeNullable();
@@ -137,40 +137,40 @@ test("Type guards should allow valid matching operations", () => {1
 
 test("Type guards should allow valid matching with entities operations", () => {1
     function testMatchingNesting(v: any) {            
-        if (matchEntityB(v)) {
+        if (matchKeyB(v)) {
             // Should have exact shape { b: string, c?:string }
             expectTypeOf(v.b).toBeString();
             expectTypeOf(v.c).toBeNullable();
             expectTypeOf(v).not.toHaveProperty("a");
 
-            if (isEntityB(v)) {
+            if (isKeyB(v)) {
                 // Should have exact shape { b: string }
                 expectTypeOf(v.b).toBeString();
                 expectTypeOf(v).not.toHaveProperty("c");
-            } else if (matchEntityC(v)) {
+            } else if (matchKeyC(v)) {
                 // Should have exact shape { b: string, c: string }
                 expectTypeOf(v.b).toBeString();
                 expectTypeOf(v.b).toBeString();
-            } else if (isEntityC(v)) {
+            } else if (isKeyC(v)) {
                 // Invalid semantically, can't be and match 2 different types at the same time
                 expectTypeOf(v).toMatchTypeOf<never>();
             }
 
-        } else if (matchEntityC(v)) {
+        } else if (matchKeyC(v)) {
             // Should have exact shape { b?: string, c: string }
             expectTypeOf(v.c).toBeString();
             expectTypeOf(v.b).toBeNullable();
             expectTypeOf(v).not.toHaveProperty("a");
 
-            if (isEntityC(v)) {
+            if (isKeyC(v)) {
                 // Should have exact shape { c: string }
                 expectTypeOf(v.c).toBeString();
                 expectTypeOf(v).not.toHaveProperty("b");
-            } else if (matchEntityB(v)) {
+            } else if (matchKeyB(v)) {
                 // Should have exact shape { b: string, c: string }
                 expectTypeOf(v.b).toBeString();
                 expectTypeOf(v.b).toBeString();
-            } else if (isEntityB(v)) {
+            } else if (isKeyB(v)) {
                 // Invalid semantically, can't be and match 2 different types at the same time
                 expectTypeOf(v).toMatchTypeOf<never>();
             }
@@ -194,41 +194,41 @@ test("Type guards should direct type narrowing from operation to entity leavec",
             expectTypeOf(v.c).toBeNullable();
             expectTypeOf(v.a).toBeNullable();
 
-            if (isCombined(v)) {
+            if (isCombinable(v)) {
                 // Should have exact shape { b?: string, c?:string }
                 expectTypeOf(v.b).toBeNullable();
                 expectTypeOf(v.c).toBeNullable();
                 expectTypeOf(v).not.toHaveProperty("a");
                 
-                if (isEntityA(v)) {
+                if (isKeyA(v)) {
                     expect.unreachable();
-                } else if (isEntityB(v)) {
+                } else if (isKeyB(v)) {
                     // Should have exact shape { b: string }
                     expectTypeOf(v.b).toBeString();
                     expectTypeOf(v).not.toHaveProperty("a");
                     expectTypeOf(v).not.toHaveProperty("c");
-                } else if (isEntityC(v)) {
+                } else if (isKeyC(v)) {
                     // Should have exact shape { c: string }
                     expectTypeOf(v.c).toBeString();
                     expectTypeOf(v).not.toHaveProperty("a");
                     expectTypeOf(v).not.toHaveProperty("b");
                 }
                 
-            } else if (isUniq(v)) {
+            } else if (isExclusive(v)) {
                 // Should have exact shape { a: string }
                 expectTypeOf(v.a).toBeNullable();
                 expectTypeOf(v).not.toHaveProperty("b");
                 expectTypeOf(v).not.toHaveProperty("c");
                 
-                if (isEntityA(v)) {
+                if (isKeyA(v)) {
                     // Should have exact shape { a: string }
                     expectTypeOf(v.a).toBeString();
                     expectTypeOf(v).not.toHaveProperty("b");
                     expectTypeOf(v).not.toHaveProperty("c");
     
-                } else if (isEntityB(v)) {
+                } else if (isKeyB(v)) {
                     expect.unreachable();
-                } else if (isEntityC(v)) {
+                } else if (isKeyC(v)) {
                     expect.unreachable();
                 }
             }
@@ -276,31 +276,31 @@ test("Type guards should direct type narrowing from operation to entity leavec",
 //   v.b; // OK: `string | undefined`
 //   v.c; // OK: `string | undefined`
 
-//   if (isUniq(v)) {
-//     if (isEntityA(v)) {
+//   if (isExclusive(v)) {
+//     if (isKeyA(v)) {
 //         v.a
 //     }
-//     // Inside `isUniq`, `v` is `Uniq` and has only `a`
+//     // Inside `isExclusive`, `v` is `Exclusive` and has only `a`
 //     v.a; // OK: `string`
-//     v.b; // OK: `b` does not exist on `Uniq`
-//     v.c; // OK: `c` does not exist on `Uniq`
+//     v.b; // OK: `b` does not exist on `Exclusive`
+//     v.c; // OK: `c` does not exist on `Exclusive`
 
-//     if (isCombined(v)) {
+//     if (isCombinable(v)) {
 //       v.a; // OK: `never` due to mutual exclusivity
 //       v.b; // OK: `never` due to mutual exclusivity
 //       v.c; // OK: `never` due to mutual exclusivity
 //     }
-//   } else if (isCombined(v)) {
-//     // Inside `isCombined`, `v` is `Combined` with `b` and `c` only
-//     v.a; // OK: `a` does not exist on `Combined`
+//   } else if (isCombinable(v)) {
+//     // Inside `isCombinable`, `v` is `Combinable` with `b` and `c` only
+//     v.a; // OK: `a` does not exist on `Combinable`
 //     v.b; // OK: string | undefined
 //     v.c; // OK: `string | undefined`
-//     if (isEntityB(v)) {
+//     if (isKeyB(v)) {
 //         v.b
-//     } else if (isEntityC(v)) {
+//     } else if (isKeyC(v)) {
 //         v.c
 //     }
-//     if (isUniq(v)) {
+//     if (isExclusive(v)) {
 //       v.a; // OK: `never` due to mutual exclusivity
 //       v.b; // OK: `never` due to mutual exclusivity
 //       v.c; // OK: `never` due to mutual exclusivity
