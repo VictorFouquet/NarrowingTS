@@ -14,7 +14,7 @@ test("Type guards should prevent invalid nesting of isCombined and isUniq", () =
             }
             
         } else if (isUniq(v)) {
-            expectTypeOf(v.a).toBeString();
+            expectTypeOf(v.a).toBeNullable();
             expectTypeOf(v).not.toHaveProperty("b");
             expectTypeOf(v).not.toHaveProperty("c");
             
@@ -64,7 +64,8 @@ test("Type guards should prevent invalid nesting of isEntity, isUniq and isCombi
             
         } else if (isUniq(v)) {
             // Should have exact shape { a: string }
-            expectTypeOf(v.a).toBeString();
+            expectTypeOf(v.a).toBeNullable();
+            expectTypeOf(v.d).toBeNullable();
             expectTypeOf(v).not.toHaveProperty("b");
             expectTypeOf(v).not.toHaveProperty("c");
             
@@ -215,7 +216,7 @@ test("Type guards should direct type narrowing from operation to entity leavec",
                 
             } else if (isUniq(v)) {
                 // Should have exact shape { a: string }
-                expectTypeOf(v.a).toBeString();
+                expectTypeOf(v.a).toBeNullable();
                 expectTypeOf(v).not.toHaveProperty("b");
                 expectTypeOf(v).not.toHaveProperty("c");
                 
