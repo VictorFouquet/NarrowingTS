@@ -1,22 +1,39 @@
 # TypeNarrowing - TS
 
-The TypeNarrowing *Proof of Concept* provides an example of complex type narrowing in TypeScript using branded-types and typeguards.
+The **TypeNarrowing Proof of Concept** demonstrates advanced type narrowing techniques in TypeScript, using branded types and type guards to strictly enforce complex business rules. The main goal is to provide an example of how to model a domain with types that are either mutually exclusive or combinable, but never both at the same time.
 
 ## Overview
 
-The POC is aimed at enforcing several business rules to strictly constrain the structure and traversal of an object.
+In TypeScript, narrowing down types to enforce specific business rules is a common practice when developing robust applications. **TypeNarrowing - TS** is an attempt to build a strict type system that ensures an object’s structure adheres to defined constraints, in which the shape of the object is dynamically adjusted based on its values. This is especially useful when we want to model scenarios where we must enforce exclusivity or combinability of certain properties in an object.
 
-Specifications as typed objects can either be exclusive or combinable specifications, but can never be both exlusive and combinable at the same time.
+For example, consider an e-commerce or subscription service where certain plans, configurations, or options must either be mutually exclusive or combinable. TypeScript’s structural typing allows us to define a flexible yet strictly constrained set of possible configurations, but it doesn’t naturally prevent the presence of conflicting or invalid combinations.
 
-**Streaming service domain example**
+In this proof of concept, we demonstrate how TypeScript’s branded types, type guards, and custom types can help ensure that an object adheres to the correct structure, disallowing illegal combinations of properties.
 
-For the sake of demonstration, let's model a simple streaming service domain by the following business rules:
+### Business Rules
 
-- The streaming platform sells *plans* that can be either *predefined* or *custom*, mutually exclusive
-- The *predefined* plans can either be *standard* or *premium*, mutually exclusive
-- The *custom* plans are defined by a combination or *options*, (*adFree*, *offline*...)
+The following business rules are enforced in this system:
 
-Developers should be allowed to create the following `Plan` objects: 
+- **Exclusive**: An object can only have one key from a set of exclusive keys. It cannot have multiple exclusive keys or any keys that do not belong to the exclusive set.
+- **Combinable**: An object can have multiple keys from a set of combinable keys. These keys can overlap, but no additional keys outside the set can be present.
+- **Operation**: An object must either match the structure of an Exclusive object or a Combinable object, but it cannot be both.
+
+
+This POC aims to model and enforce these business rules by using TypeScript’s type system in a way that prevents invalid combinations and guarantees that the object adheres to the expected structure.
+
+## Streaming Service Domain Example
+
+To illustrate the concept in a real-world context, let’s model a **streaming service subscription** domain with these business rules:
+
+- The streaming platform offers **plans** that can be either *predefined* or *custom*, but never both.
+- The **predefined plans** consist of *standard* or *premium*, which are **mutually exclusive**.
+- The **custom plans** are defined by a set of **options**, such as *adFree* and *offline* than **can be combined**.
+
+This ensures that users can create a valid Plan object, while preventing conflicting or invalid combinations.
+
+### Example usage
+
+With these rules in place, the following configurations are **valid**:
 
 ```typescript
 // User has a standard plan ✅
@@ -42,19 +59,13 @@ let customCombined: Plan = {
 }
 ```
 
-But the developers should not be allowed to have several *predefined* plans:
-
+However, the following configurations would be **invalid**:
 ```typescript
 // User can't have two predefined plans ❌
 const plan: Plan = {
     standard: true,
     premium: true
 }
-```
-
-Nor should they be allowed to mix *predefined* and *custom* plans:
-
-```typescript
 // User can't mix predefined and custom plans ❌
 const plan: Plan = {
     standard: true,
@@ -94,9 +105,12 @@ An object of type `Operation` should:
 
 All the business rules are unit tested in the `src/type-narrowing.test.ts` file.
 
-Run the tests with :
-
+Using your favorite package manager :
+- Install dependencies (`vitest`, `@types/node` and `typescript`)
 ```bash
 npm install
+```
+- Run the unit tests suite
+```bash
 npm run test
 ```
