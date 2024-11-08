@@ -1,5 +1,100 @@
 import { test, expect, expectTypeOf } from "vitest";
-import { isCombinable, isKeyA, isKeyB, isKeyC, isOperation, isExclusive, matchKeyB, matchKeyC } from "./type-narrowing";
+import { isCombinable, isKeyA, isKeyB, isKeyC, isOperation, isExclusive, matchKeyB, matchKeyC, isKeyD, Exclusive, Combinable, Operation } from "./type-narrowing";
+
+
+test("Exclusive should forbid empty object",
+    () => expectTypeOf<{}>().not.toMatchTypeOf<Exclusive>()
+);
+
+test("Exclusive should forbid object with several ExclusiveKey",
+    () => expectTypeOf<{a: "", d: ""}>().not.toMatchTypeOf<Exclusive>()
+)
+
+test("Exclusive should allow only one key from ExclusiveKey", () => {
+    expectTypeOf<{a: ""}>().toMatchTypeOf<Exclusive>();
+    expectTypeOf<{d: ""}>().toMatchTypeOf<Exclusive>();
+
+    const v: Exclusive = {
+        a: "",
+        // @ts-expect-error
+        c: ""
+    };
+});
+
+test("Combinable should forbid empty object", () => expectTypeOf<{}>().not.toMatchTypeOf<Combinable>());
+
+test("Combinable should allow any combination of keys from CombinableKey", () => {
+    expectTypeOf<{b: ""}>().toMatchTypeOf<Combinable>();
+    expectTypeOf<{c: ""}>().toMatchTypeOf<Combinable>();
+    expectTypeOf<{b: "", c: ""}>().toMatchTypeOf<Combinable>();
+
+    const v1: Combinable = {
+        // @ts-expect-error
+        a: "",
+        b: "",
+        c: ""
+    };
+
+    const v2: Combinable = {
+        b: "",
+        c: "",
+        // @ts-expect-error
+        d: ""
+    };
+});
+
+test("Operation should forbid empty object", () => expectTypeOf<{}>().not.toMatchTypeOf<Operation>());
+
+test("Operation should forbid mixing Exlusive and Combinable", () => {
+    expectTypeOf<{a: "", b: ""}>().not.toMatchTypeOf<Operation>();
+    expectTypeOf<{a: "", c: ""}>().not.toMatchTypeOf<Operation>();
+    expectTypeOf<{a: "", b: "", c: ""}>().not.toMatchTypeOf<Operation>();
+    
+    expectTypeOf<{b: "", d: ""}>().not.toMatchTypeOf<Operation>();
+    expectTypeOf<{c: "", d: ""}>().not.toMatchTypeOf<Operation>();
+    expectTypeOf<{b: "", c: "", d: ""}>().not.toMatchTypeOf<Operation>();
+});
+
+test("Operation should allow Unique", () => {
+    expectTypeOf<{a: ""}>().toMatchTypeOf<Operation>();
+    expectTypeOf<{d: ""}>().toMatchTypeOf<Operation>();
+
+    expectTypeOf<{a: "", d: ""}>().not.toMatchTypeOf<Operation>();
+
+    expectTypeOf<{}>().not.toMatchTypeOf<Operation>();
+});
+
+test("Operation should allow Combinable", () => {
+    expectTypeOf<{b: ""}>().toMatchTypeOf<Operation>();
+    expectTypeOf<{c: ""}>().toMatchTypeOf<Operation>();
+    expectTypeOf<{b: "", c: ""}>().toMatchTypeOf<Operation>();
+});
+
+test("Type guards should narrow Exclusive to ExclusiveKey", () => {
+    function narrowExclusiveToIsKey(v: any) {
+        if (isExclusive(v)) {
+            expectTypeOf(v.a).toBeNullable();
+            expectTypeOf(v.d).toBeNullable();
+            expectTypeOf(v).not.toHaveProperty("b");
+            expectTypeOf(v).not.toHaveProperty("c");
+
+            if (isKeyA(v)) {
+                expectTypeOf(v.a).toBeString();
+                expectTypeOf(v).not.toHaveProperty("d");
+            } else if (isKeyD(v)) {
+                expectTypeOf(v.d).toBeString();
+                expectTypeOf(v).not.toHaveProperty("a");
+            } else {
+                expect.unreachable();
+            }
+        }
+    }
+
+    narrowExclusiveToIsKey({ a: "" });
+    narrowExclusiveToIsKey({ d: "" });
+    narrowExclusiveToIsKey({ a: "", d: "" });
+    narrowExclusiveToIsKey({ a: "", c: "" });
+});
 
 test("Type guards should prevent invalid nesting of isCombinable and isExclusive", () => {1
     function testInvalidSemanticNesting(v: any) {
