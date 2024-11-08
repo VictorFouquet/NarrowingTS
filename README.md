@@ -6,56 +6,61 @@ The TypeNarrowing *Proof of Concept* provides an example of complex type narrowi
 
 The POC is aimed at enforcing several business rules to strictly constrain the structure and traversal of an object.
 
-An operation can either be an exclusive or a combinable operation, but can never be both at the same time.
+Specifications as typed objects can either be exclusive or combinable specifications, but can never be both exlusive and combinable at the same time.
 
-**Domain examples**
+**Streaming service domain example**
 
-> A *literal query* can be a *strict equal query* or a combination of *match queries*.  
-It would not make sense semanticaly to allow a query to be at the same time a *strict equality query* AND a combination of *match queries*, regardless of how many *match queries* are combined.
+For the sake of demonstration, let's model a simple streaming service domain by the following business rules:
 
+- The streaming platform sells *plans* that can be either *predefined* or *custom*, mutually exclusive
+- The *predefined* plans can either be *standard* or *premium*, mutually exclusive
+- The *custom* plans are defined by a combination or *options*, (*adFree*, *offline*...)
 
-The developers should be allowed to create the following objects, because they semantically make sense :
-
-```typescript
-const eqQuery: Query = {
-    eq: "foo"
-};
-
-const combinedQuery: Query = {
-    startsWith: "foo",
-    endsWith:   "bar"
-};
-```
-
-The developers should be forbiden to create the following objects, because they semantically don't make sense or are redundant :
+Developers should be allowed to create the following `Plan` objects: 
 
 ```typescript
-const eqQuery: Query = {
-    eq: "foo",
-    contains: "foo"
+// User has a standard plan ✅
+let standard: Plan = {
+    standard: true
 };
-
-const combinedQuery: Query = {
-    eq: "foo",
-    endsWith: "bar",
+// User has a premium plan ✅
+let premium: Plan = {
+    premium: true
 };
+// User has a adFree custom plan ✅
+let customAdFree: Plan = {
+    adFree: true
+};
+// User has a offline custom plan ✅
+let customOffline: Plan = {
+    offline: true
+};
+// User has a combined custom plan ✅
+let customCombined: Plan = {
+    addFree: true,
+    offline: true
+}
 ```
 
-All the object allowed keys are defined as typed strings, `A`, `B`, `C` and `D`.
+But the developers should not be allowed to have several *predefined* plans:
 
-Each of theses keys is used to define a typed object, associating the key to a `string` value :
-- `KeyA` associates `A` to a `string` in an object
-- `KeyB` associates `B` to a `string` in an object
-- `KeyC` associates `C` to a `string` in an object
-- `KeyD` associates `D` to a `string` in an object
+```typescript
+// User can't have two predefined plans ❌
+const plan: Plan = {
+    standard: true,
+    premium: true
+}
+```
 
-These keys are subdivided between:
-- `ExclusiveKeys`  : `A` and `D`
-- `CombinableKeys` : `B` and `C`
+Nor should they be allowed to mix *predefined* and *custom* plans:
 
-From those subdivided keys, two different typed objects are defined, `Exclusive` and `Combinable`, respectively following exclusive and combinable business rules.
-
-The higher level typed object is `Operation` and can hold any of the allowed keys associated to a `string` value, following the operation business rules.
+```typescript
+// User can't mix predefined and custom plans ❌
+const plan: Plan = {
+    standard: true,
+    adFree: true
+}
+```
 
 ## Business rules
 
