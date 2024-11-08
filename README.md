@@ -4,7 +4,9 @@ The **TypeNarrowing Proof of Concept** demonstrates advanced type narrowing tech
 
 ## Overview
 
-In TypeScript, narrowing down types to enforce specific business rules is a common practice when developing robust applications. **TypeNarrowing - TS** is an attempt to build a strict type system that ensures an object’s structure adheres to defined constraints, in which the shape of the object is dynamically adjusted based on its values. This is especially useful when we want to model scenarios where we must enforce exclusivity or combinability of certain properties in an object.
+In TypeScript, narrowing down types to enforce specific business rules is a common practice when developing robust applications.
+
+**TypeNarrowing - TS** is an attempt to build a strict type system that ensures an object’s structure adheres to defined constraints, in which the shape of the object is dynamically adjusted based on its values. This is especially useful when we want to model scenarios where we must enforce exclusivity or combinability of certain properties in an object.
 
 For example, consider an e-commerce or subscription service where certain plans, configurations, or options must either be mutually exclusive or combinable. TypeScript’s structural typing allows us to define a flexible yet strictly constrained set of possible configurations, but it doesn’t naturally prevent the presence of conflicting or invalid combinations.
 
@@ -16,7 +18,7 @@ The following business rules are enforced in this system:
 
 - **Exclusive**: An object can only have one key from a set of exclusive keys. It cannot have multiple exclusive keys or any keys that do not belong to the exclusive set.
 - **Combinable**: An object can have multiple keys from a set of combinable keys. These keys can overlap, but no additional keys outside the set can be present.
-- **Operation**: An object must either match the structure of an Exclusive object or a Combinable object, but it cannot be both.
+- **Schema**: An object must either match the structure of an Exclusive object or a Combinable object, but it cannot be both.
 
 
 This POC aims to model and enforce these business rules by using TypeScript’s type system in a way that prevents invalid combinations and guarantees that the object adheres to the expected structure.
@@ -94,9 +96,9 @@ An object of type `Combinable` should:
 - forbid empty objects
 - forbid the presence of any key that doesn't extend `CombinableKeys`
 
-### Operation
+### Schema
 
-An object of type `Operation` should:
+An object of type `Schema` should:
 
 - allow either the structure of an `Exclusive` or a `Combined` object
 - forbid empty objects
