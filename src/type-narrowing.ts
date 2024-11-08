@@ -31,7 +31,7 @@ export type Combinable = AtLeastOne<{
   [K in CombinableKeys]: string
 }>;
 
-export type Operation = {
+export type Schema = {
     [K in Keys]: AtLeastOne<{
         [U in Keys]: 
             K extends U ? string :
@@ -79,7 +79,7 @@ export function isCombinable(v: any): v is Combinable & Brand<"Combinable" | B |
   return typeof v === "object" && containsKeysAllWithTypeString(v, ["b", "c"]);
 }
 
-export function isOperation(v: any): v is Operation {
+export function isSchema(v: any): v is Schema {
   return typeof v === "object"
     && (
         containsKeysAllWithTypeString(v, ["a", "d"]) ||

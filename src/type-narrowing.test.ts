@@ -1,5 +1,5 @@
 import { test, expect, expectTypeOf } from "vitest";
-import { isCombinable, isKeyA, isKeyB, isKeyC, isOperation, isExclusive, matchKeyB, matchKeyC, isKeyD, Exclusive, Combinable, Operation } from "./type-narrowing";
+import { isCombinable, isKeyA, isKeyB, isKeyC, isSchema, isExclusive, matchKeyB, matchKeyC, isKeyD, Exclusive, Combinable, Schema } from "./type-narrowing";
 
 
 test("Exclusive should forbid empty object",
@@ -43,31 +43,31 @@ test("Combinable should allow any combination of keys from CombinableKey", () =>
     };
 });
 
-test("Operation should forbid empty object", () => expectTypeOf<{}>().not.toMatchTypeOf<Operation>());
+test("Schema should forbid empty object", () => expectTypeOf<{}>().not.toMatchTypeOf<Schema>());
 
-test("Operation should forbid mixing Exlusive and Combinable", () => {
-    expectTypeOf<{a: "", b: ""}>().not.toMatchTypeOf<Operation>();
-    expectTypeOf<{a: "", c: ""}>().not.toMatchTypeOf<Operation>();
-    expectTypeOf<{a: "", b: "", c: ""}>().not.toMatchTypeOf<Operation>();
+test("Schema should forbid mixing Exlusive and Combinable", () => {
+    expectTypeOf<{a: "", b: ""}>().not.toMatchTypeOf<Schema>();
+    expectTypeOf<{a: "", c: ""}>().not.toMatchTypeOf<Schema>();
+    expectTypeOf<{a: "", b: "", c: ""}>().not.toMatchTypeOf<Schema>();
     
-    expectTypeOf<{b: "", d: ""}>().not.toMatchTypeOf<Operation>();
-    expectTypeOf<{c: "", d: ""}>().not.toMatchTypeOf<Operation>();
-    expectTypeOf<{b: "", c: "", d: ""}>().not.toMatchTypeOf<Operation>();
+    expectTypeOf<{b: "", d: ""}>().not.toMatchTypeOf<Schema>();
+    expectTypeOf<{c: "", d: ""}>().not.toMatchTypeOf<Schema>();
+    expectTypeOf<{b: "", c: "", d: ""}>().not.toMatchTypeOf<Schema>();
 });
 
-test("Operation should allow Unique", () => {
-    expectTypeOf<{a: ""}>().toMatchTypeOf<Operation>();
-    expectTypeOf<{d: ""}>().toMatchTypeOf<Operation>();
+test("Schema should allow Unique", () => {
+    expectTypeOf<{a: ""}>().toMatchTypeOf<Schema>();
+    expectTypeOf<{d: ""}>().toMatchTypeOf<Schema>();
 
-    expectTypeOf<{a: "", d: ""}>().not.toMatchTypeOf<Operation>();
+    expectTypeOf<{a: "", d: ""}>().not.toMatchTypeOf<Schema>();
 
-    expectTypeOf<{}>().not.toMatchTypeOf<Operation>();
+    expectTypeOf<{}>().not.toMatchTypeOf<Schema>();
 });
 
-test("Operation should allow Combinable", () => {
-    expectTypeOf<{b: ""}>().toMatchTypeOf<Operation>();
-    expectTypeOf<{c: ""}>().toMatchTypeOf<Operation>();
-    expectTypeOf<{b: "", c: ""}>().toMatchTypeOf<Operation>();
+test("Schema should allow Combinable", () => {
+    expectTypeOf<{b: ""}>().toMatchTypeOf<Schema>();
+    expectTypeOf<{c: ""}>().toMatchTypeOf<Schema>();
+    expectTypeOf<{b: "", c: ""}>().toMatchTypeOf<Schema>();
 });
 
 test("Type guards should narrow Exclusive to ExclusiveKey", () => {
@@ -283,7 +283,7 @@ test("Type guards should allow valid matching with entities operations", () => {
 
 test("Type guards should direct type narrowing from operation to entity leavec", () => {1
     function testTypeNarrowing(v: any) {
-        if (isOperation(v)) {
+        if (isSchema(v)) {
             // Should have exact shape { a?: string, b?: string, c?:string }
             expectTypeOf(v.b).toBeNullable();
             expectTypeOf(v.c).toBeNullable();
@@ -365,8 +365,8 @@ test("Type guards should direct type narrowing from operation to entity leavec",
 // Task: sum up the business rules tested here, the fix the KO without breaking OKs
 // let v: unknown
 
-// if (isOperation(v)) {
-//   // Here `v` is inferred as `Operation`, with `a`, `b`, and `c` optional
+// if (isSchema(v)) {
+//   // Here `v` is inferred as `Schema`, with `a`, `b`, and `c` optional
 //   v.a; // OK: `string | undefined`
 //   v.b; // OK: `string | undefined`
 //   v.c; // OK: `string | undefined`
