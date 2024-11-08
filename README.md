@@ -1,12 +1,12 @@
-# TypeNarrowing - TS
+# NarrowingTS
 
-The **TypeNarrowing Proof of Concept** demonstrates advanced type narrowing techniques in TypeScript, using branded types and type guards to strictly enforce complex business rules. The main goal is to provide an example of how to model a domain with types that are either mutually exclusive or combinable, but never both at the same time.
+The **NarrowingTS** proof of concept demonstrates advanced type narrowing techniques in TypeScript, using branded types and type guards to strictly enforce complex business rules. The main goal is to provide an example of how to model a domain with types that are either mutually exclusive or combinable, but never both at the same time.
 
 ## Overview
 
 In TypeScript, narrowing down types to enforce specific business rules is a common practice when developing robust applications.
 
-**TypeNarrowing - TS** is an attempt to build a strict type system that ensures an object’s structure adheres to defined constraints, in which the shape of the object is dynamically adjusted based on its values. This is especially useful when we want to model scenarios where we must enforce exclusivity or combinability of certain properties in an object.
+**NarrowingTS** is an attempt to build a strict type system that ensures an object’s structure adheres to defined constraints, in which the shape of the object is dynamically adjusted based on its values. This is especially useful when we want to model scenarios where we must enforce exclusivity or combinability of certain properties in an object.
 
 For example, consider an e-commerce or subscription service where certain plans, configurations, or options must either be mutually exclusive or combinable. TypeScript’s structural typing allows us to define a flexible yet strictly constrained set of possible configurations, but it doesn’t naturally prevent the presence of conflicting or invalid combinations.
 
