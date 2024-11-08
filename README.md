@@ -10,11 +10,9 @@ An operation can either be an exclusive or a combinable operation, but can never
 
 **Domain examples**
 
-```
-A *literal query* can be a *strict equal query* or a combination of *match queries*.
-
+> A *literal query* can be a *strict equal query* or a combination of *match queries*.  
 It would not make sense semanticaly to allow a query to be at the same time a *strict equality query* AND a combination of *match queries*, regardless of how many *match queries* are combined.
-```
+
 
 The developers should be allowed to create the following objects, because they semantically make sense :
 
