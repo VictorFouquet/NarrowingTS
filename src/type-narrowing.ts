@@ -82,7 +82,8 @@ export function isCombinable(v: any): v is Combinable & Brand<"Combinable" | B |
 export function isSchema(v: any): v is Schema {
   return typeof v === "object"
     && (
-        containsKeysAllWithTypeString(v, ["a", "d"]) ||
+        containsKeysAllWithTypeString(v, ["a"]) ||
+        containsKeysAllWithTypeString(v, ["d"]) ||
         containsKeysAllWithTypeString(v, ["b", "c"])
     );
 }
